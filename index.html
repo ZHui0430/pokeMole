@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="css/style.css"/>
+		<script type="text/javascript" src="js/angular.min.js"></script>
+	</head>
+	<body ng-app="susliks">
+
+		<!-- 
+			1.开始界面  开始按钮，点击进入下一个界面
+			2.游戏界面（3s倒计时）
+				开始游戏：
+					16个洞，每秒随机冒出一只老鼠
+					1秒钟里，监听每个地洞的点击事件，如果地点的地洞和老鼠地洞一样，那么老鼠就被砸了（老鼠被砸一次得	100分）
+					16秒结束游戏。累计总共得分
+					结束界面，重新游戏的按钮
+
+		 -->
+		<div id="content" ng-controller="pokeMole">
+			<div ng-class="{pageActive:page1}" class="page" id="start">
+				<h2><img class="img1" src="img/116.png"/></h2>
+				<h2 ng-click="start()"><img class="img2" src="img/start.png"/></h2>
+			</div>
+			<div ng-class="{pageActive:page2}" class="page" id="game">
+				<h3>{{timeStart}}:{{timeNum}}s</h3>
+				<h3>游戏得分：{{gameScore}}分</h3>
+				<div class="gameMain">
+					<div class="mouse" id="{{mouse.id}}" ng-repeat="mouse in mice">
+						<img ng-src="{{mouse.imgSrc}}" ng-click="killMouse(mouse.id-1)" />
+					</div>
+				</div>
+			</div>
+			<div ng-class="{pageActive:page3}" class="page" id="over">
+				<h3 class="endScore">最终得分：{{gameScore}}分</h3>
+				<h3 ng-click="tryAgain()"><img src="img/11.png"/></h3>
+			</div>
+		</div>
+		<script type="text/javascript">
+			var app=angular.module("susliks",[]);
+			app.controller("pokeMole",function($scope,$interval,$timeout){
+				$scope.page1=true;
+				$scope.page2=false;
+				$scope.page3=false;
+				$scope.gameScore=0;//初始分数0
+				$scope.timeNum=16;//总共16秒
+				$scope.randomNum="";//初始化随机数
+
+				//开始游戏
+				$scope.start=function(){
+					$scope.page2=true;
+					$scope.timeStart="开始倒计时";
+					$scope.timeNum=3;
+					var timeInterval=$interval(function(){
+						$scope.timeNum -=1;
+						if($scope.timeNum==0){
+							$scope.gameStart();
+							$interval.cancel(timeInterval);
+						}
+					},1000);
+				};
+
+				$scope.gameStart=function(){
+					$scope.timeStart="游戏剩余时间";
+					$scope.timeNum=16;
+					
+					var gameTime=$interval(function(){
+						$scope.randomNum=Math.floor(Math.random()*16);
+						$scope.mice[$scope.randomNum].imgSrc="img/112.png";//地鼠
+						$scope.timeNum -=1;
+						var temp=$timeout(function(){
+							$scope.mice[$scope.randomNum].imgSrc="img/111.png";//地洞
+							$timeout.cancel(temp);
+						},1400)
+						if($scope.timeNum==0){
+							window.setTimeout(function(){
+								$scope.page3=true;
+								$interval.cancel(gameTime);
+							},300);
+						}
+
+					},1500)
+				}
+
+				//点击地鼠
+				$scope.killMouse=function(id){
+					if(id==$scope.randomNum){
+						$scope.gameScore +=100;
+						$scope.mice[id].imgSrc="img/113.png";//被打的地鼠
+					}
+
+				};
+
+				//再试一次
+				$scope.tryAgain=function(){
+					$scope.page1=true;
+					$scope.page2=false;
+					$scope.page3=false;
+					$scope.gameScore=0;
+					$scope.timeNum=16;
+					$scope.randomNum="";
+				}
+				
+				$scope.mice=[	{id:1,imgSrc:"img/111.png",state:false},
+								{id:2,imgSrc:"img/111.png",state:false},
+								{id:3,imgSrc:"img/111.png",state:false},
+								{id:4,imgSrc:"img/111.png",state:false},
+								{id:5,imgSrc:"img/111.png",state:false},
+								{id:6,imgSrc:"img/111.png",state:false},
+								{id:7,imgSrc:"img/111.png",state:false},
+								{id:8,imgSrc:"img/111.png",state:false},
+								{id:9,imgSrc:"img/111.png",state:false},
+								{id:10,imgSrc:"img/111.png",state:false},
+								{id:11,imgSrc:"img/111.png",state:false},
+								{id:12,imgSrc:"img/111.png",state:false},
+								{id:13,imgSrc:"img/111.png",state:false},
+								{id:14,imgSrc:"img/111.png",state:false},
+								{id:15,imgSrc:"img/111.png",state:false},
+								{id:16,imgSrc:"img/111.png",state:false}]
+			})
+		</script>
+	</body>
+</html>
